@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Voting & Citizen ID</title>
+    <style>
+        :root {
+            --primary: #2A4365;
+            --secondary: #4299E1;
+            --accent: #90CDF4;
+            --text: #1A202C;
+            --background: #EBF8FF;
+            --card-bg: #ffffff;
+            --success: #48BB78;
+            --warning: #F6AD55;
+            --error: #FC8181;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        .college-logo {
+            width: 100px;
+            height: auto;
+            margin: auto;
+            display: block;
+        }
+
+        .college-name {
+            font-size: 2em;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .title-content {
+            margin: 20px 0;
+            max-width: 900px;
+        }
+
+        .presenters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px auto;
+            max-width: 1000px;
+            width: 90%;
+        }
+
+        .presenters-card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s 0.6s forwards;
+            opacity: 0;
+        }
+
+        .presenters-card h4 {
+            color: var(--primary);
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .presenters-card p {
+            margin: 8px 0;
+            color: var(--text);
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .guide-card {
+            border-left: 4px solid var(--primary);
+        }
+
+        .students-card {
+            border-left: 4px solid var(--secondary);
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.95) translateY(30px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 40px;
+            text-align: center;
+            background-color: var(--background);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .slide.prev {
+            transform: scale(0.9) translateY(-30px);
+        }
+
+        .presenters {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s 0.6s forwards;
+            opacity: 0;
+        }
+
+        .presenters p {
+            margin: 8px 0;
+            color: var(--text);
+            font-size: 1.2em;
+        }
+
+        .guide {
+            margin-top: 20px;
+            font-style: italic;
+            color: var(--primary);
+        }
+
+        .keyboard-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--card-bg);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: var(--text);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .keyboard-hint:hover {
+            opacity: 1;
+        }
+
+        .story-character {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            margin: 20px auto;
+            transition: transform 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        .story-character:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .blockchain-visual {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+            perspective: 1000px;
+        }
+
+        .block {
+            width: 120px;
+            height: 80px;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: blockEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+
+        .block:hover {
+            transform: translateY(-5px) rotateX(10deg);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .block::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            font-size: 1.5em;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .comparison-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s forwards;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+
+        .problem-card {
+            border-top: 5px solid #FF9B9B;
+        }
+
+        .solution-card {
+            border-top: 5px solid var(--primary);
+        }
+
+        .feature-list {
+            list-style: none;
+            text-align: left;
+        }
+
+        .feature-list li {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+
+        .feature-list li:hover {
+            transform: translateX(5px);
+        }
+
+        .feature-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            padding: 14px 28px;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            background-color: var(--secondary);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background-color: var(--card-bg);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--text);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .voting-animation {
+            width: 300px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .vote-particle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: voteFlow 3s infinite linear;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255,107,107,0.5); }
+            to { text-shadow: 0 0 30px rgba(78,205,196,0.8); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes voteFlow {
+            0% { left: -20px; opacity: 0; }
+            50% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        .tech-stack {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .tech-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.2);
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .challenge-emoji {
+            font-size: 3em;
+            margin: 20px 0;
+            display: block;
+        }
+
+        .conclusion-points {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes blockEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .presenters-grid {
+                grid-template-columns: 1fr;
+            }
+            .college-name {
+                font-size: 1.5em;
+            }
+            .slide h1 {
+                font-size: 2em;
+            }
+            .slide h2 { font-size: 2em; }
+            .slide h3 { font-size: 1.8em; }
+            .slide p, .slide li { font-size: 1.2em; }
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">12</span>
+        </div>
+
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h2 class="college-name">Malnad College of Engineering, Hassan</h2>
+            <img src="logo.png" alt="Malnad College of Engineering Logo" class="college-logo">
+            
+            <div class="title-content">
+                <h1>🗳️ Blockchain-Based E-Voting and Digital Citizen Identity</h1>
+                <h3>A Comprehensive Study of Decentralized Democracy</h3>
+            </div>
+            
+            <div class="presenters-grid">
+                <div class="presenters-card students-card">
+                    <h4>Presented By</h4>
+                    <p><strong>Spoorthi Hokrana</strong></p>
+                    <p>4MC22CB033</p>
+                    <p><strong>Dhanya C</strong></p>
+                    <p>4MC22CB006</p>
+                </div>
+                
+                <div class="presenters-card guide-card">
+                    <h4>Under the Guidance of</h4>
+                    <p><strong>Mrs. Usha M. G</strong></p>
+                    <p>Assistant Professor</p>
+                    <p>Department of Computer Science</p>
+                    <p>and Business System</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Introduction -->
+        <div class="slide">
+            <h2>📚 Introduction to Blockchain-Based Voting</h2>
+            <div class="story-character">🔗</div>
+            <div class="comparison-card">
+                <h3>Research Objectives</h3>
+                <ul class="feature-list">
+                    <li>Analyze the implementation of blockchain in e-voting systems</li>
+                    <li>Evaluate digital citizen identity management using DLT</li>
+                    <li>Study security implications of decentralized voting</li>
+                    <li>Assess scalability and performance metrics</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Current System Analysis -->
+        <div class="slide">
+            <h2>⚠️ Current System Analysis</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card problem-card">
+                    <h3>Technical Limitations</h3>
+                    <ul class="feature-list">
+                        <li>Centralized database vulnerabilities</li>
+                        <li>Single point of failure risks</li>
+                        <li>Limited audit capabilities</li>
+                        <li>Manual verification overhead</li>
+                    </ul>
+                </div>
+                <div class="comparison-card problem-card">
+                    <h3>Identity Management Issues</h3>
+                    <ul class="feature-list">
+                        <li>Fragmented identity systems</li>
+                        <li>Complex verification processes</li>
+                        <li>Data integrity concerns</li>
+                        <li>Privacy vulnerabilities</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Blockchain Architecture -->
+        <div class="slide">
+            <h2>⛓️ Blockchain Architecture</h2>
+            <div class="blockchain-visual">
+                <div class="block">Genesis<br/>Block</div>
+                <div class="block">Identity<br/>Layer</div>
+                <div class="block">Vote<br/>Layer</div>
+                <div class="block">Consensus<br/>Layer</div>
+            </div>
+            <div class="tech-stack">
+                <div class="tech-item">Merkle Trees</div>
+                <div class="tech-item">Smart Contracts</div>
+                <div class="tech-item">Zero-Knowledge Proofs</div>
+                <div class="tech-item">Consensus Protocols</div>
+            </div>
+        </div>
+
+        <!-- Slide 5: System Implementation -->
+        <div class="slide">
+            <h2>🔧 Technical Implementation</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>Smart Contract Architecture</h3>
+                    <ul class="feature-list">
+                        <li>Voter registration contract</li>
+                        <li>Ballot management system</li>
+                        <li>Vote counting mechanism</li>
+                        <li>Result verification protocol</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h3>Identity Management</h3>
+                    <ul class="feature-list">
+                        <li>Self-sovereign identity (SSI)</li>
+                        <li>Biometric integration</li>
+                        <li>Multi-factor authentication</li>
+                        <li>Privacy-preserving verification</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Security Analysis -->
+        <div class="slide">
+            <h2>🔒 Security Analysis</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>Threat Model</h3>
+                    <ul class="feature-list">
+                        <li>Sybil attack prevention</li>
+                        <li>Double-voting protection</li>
+                        <li>Byzantine fault tolerance</li>
+                        <li>Network partition handling</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h3>Privacy Measures</h3>
+                    <ul class="feature-list">
+                        <li>Ring signatures</li>
+                        <li>Homomorphic encryption</li>
+                        <li>Blind signature schemes</li>
+                        <li>Secure multiparty computation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Performance Metrics -->
+        <div class="slide">
+            <h2>📊 Performance Analysis</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>Scalability Metrics</h3>
+                    <ul class="feature-list">
+                        <li>Transaction throughput</li>
+                        <li>Block validation time</li>
+                        <li>Network latency</li>
+                        <li>Storage requirements</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h3>Cost Analysis</h3>
+                    <ul class="feature-list">
+                        <li>Gas optimization</li>
+                        <li>Infrastructure costs</li>
+                        <li>Maintenance overhead</li>
+                        <li>Scaling economics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Implementation Challenges -->
+        <div class="slide">
+            <h2>🚧 Implementation Challenges</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card problem-card">
+                    <h3>Technical Challenges</h3>
+                    <ul class="feature-list">
+                        <li>Consensus scalability</li>
+                        <li>Network partitioning</li>
+                        <li>Smart contract vulnerabilities</li>
+                        <li>Integration complexity</li>
+                    </ul>
+                </div>
+                <div class="comparison-card solution-card">
+                    <h3>Proposed Solutions</h3>
+                    <ul class="feature-list">
+                        <li>Layer-2 scaling solutions</li>
+                        <li>Sharding implementation</li>
+                        <li>Formal verification</li>
+                        <li>Modular architecture</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Future Work -->
+        <div class="slide">
+            <h2>🔮 Future Research Directions</h2>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3>Technical Improvements</h3>
+                    <ul class="feature-list">
+                        <li>Quantum-resistant cryptography</li>
+                        <li>Cross-chain interoperability</li>
+                        <li>Advanced privacy protocols</li>
+                        <li>Optimized consensus mechanisms</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h3>Integration Opportunities</h3>
+                    <ul class="feature-list">
+                        <li>Government ID systems</li>
+                        <li>International voting standards</li>
+                        <li>Cross-border identity verification</li>
+                        <li>Regulatory frameworks</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Conclusion -->
+        <div class="slide">
+            <h2>📝 Conclusion</h2>
+            <div class="conclusion-points">
+                <h3>Key Findings</h3>
+                <ul class="feature-list">
+                    <li>Viable solution for modern voting systems</li>
+                    <li>Enhanced security through decentralization</li>
+                    <li>Scalable identity management</li>
+                    <li>Cost-effective implementation</li>
+                </ul>
+                <h3 style="margin-top: 20px;">Impact</h3>
+                <ul class="feature-list">
+                    <li>Improved democratic processes</li>
+                    <li>Reduced electoral fraud</li>
+                    <li>Enhanced citizen participation</li>
+                    <li>Modernized governance</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 11: References -->
+        <div class="slide">
+            <h2>📚 References</h2>
+            <div class="comparison-card" style="max-width: 800px; text-align: left;">
+                <ul class="feature-list">
+                    <li>Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash System</li>
+                    <li>Buterin, V. (2013). Ethereum White Paper</li>
+                    <li>Research papers on blockchain voting systems</li>
+                    <li>Academic studies on digital identity management</li>
+                    <li>Technical documentation and standards</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 12: Thank You -->
+        <div class="slide">
+            <h1>Thank You</h1>
+            <div class="story-character">🎓</div>
+            <div class="presenters">
+                <p><strong>Questions & Discussion</strong></p>
+                <p style="margin-top: 20px;">Thank you for your attention!</p>
+            </div>
+        </div>
+
+        <div class="keyboard-hint">
+            Use ← → arrow keys to navigate slides
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            slides[currentSlide].classList.add('prev');
+            
+            currentSlide = (n + totalSlides) % totalSlides;
+            
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+            
+            document.getElementById('current-slide').textContent = currentSlide + 1;
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            }
+        });
+
+        // Auto-start animations
+        setInterval(() => {
+            const particles = document.querySelectorAll('.vote-particle');
+            particles.forEach((particle, index) => {
+                particle.style.animationDelay = `${index * 0.5}s`;
+            });
+        }, 3000);
+    </script>
+</body>
+</html>
