@@ -6,7 +6,6 @@ A modern, interactive HTML presentation on blockchain-based e-voting systems and
 
 This presentation was created by:
 - Spoorthi Hokrana (4MC22CB033)
-- Dhanya C (4MC22CB006)
 
 Under the guidance of:
 Mrs. Usha M. G
